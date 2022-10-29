@@ -43,8 +43,28 @@ public class Homework2 extends DBTest {
      */
     public void createGrammyInfoTable(){
         //TODO fill these in
-        executeDDL("create table grammy_categories");
-        executeDDL("create table grammy_infos");
+        executeDDL("CREATE TABLE grammy_infos\n" +
+                "(\n" +
+                "    GrammyInfosID    INTEGER       NOT NULL PRIMARY KEY,\n" +
+                "    ArtistId         INTEGER,\n" +
+                "    AlbumId          INTEGER,\n" +
+                "    TrackId          INTEGER,\n" +
+                "    Status           NVARCHAR(160) NOT NULL,\n" +
+                "    GrammyCategoryId INTEGER       NOT NULL,\n" +
+                "    FOREIGN KEY (ArtistId)\n" +
+                "        REFERENCES artists (ArtistId),\n" +
+                "    FOREIGN KEY (AlbumId)\n" +
+                "        REFERENCES albums (AlbumId),\n" +
+                "    FOREIGN KEY (TrackId)\n" +
+                "        REFERENCES tracks (TrackId),\n" +
+                "    FOREIGN KEY (GrammyCategoryId)\n" +
+                "        REFERENCES grammy_categories (GrammyCategoryId)\n" +
+                ");");
+        executeDDL("CREATE TABLE grammy_categories\n" +
+                "(\n" +
+                "    GrammyCategoryId INTEGER       NOT NULL PRIMARY KEY,\n" +
+                "    Name             NVARCHAR(160) NOT NULL\n" +
+                ");");
 
         // TEST CODE
         executeUpdate("INSERT INTO grammy_categories(Name) VALUES ('Greatest Ever');");
