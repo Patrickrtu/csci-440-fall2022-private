@@ -29,35 +29,15 @@
 Resetting DB After Test...
 Resetting DB After Test...
 Resetting DB After Test...
-[ERROR] Tests run: 3, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.335 s <<< FAILURE! - in edu.montana.csci.csci440.homework.Homework2
-[ERROR] bulkInsertGenres  Time elapsed: 0.298 s  <<< ERROR!
-java.lang.RuntimeException: org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (incomplete input)
-	at edu.montana.csci.csci440.homework.Homework2.bulkInsertGenres(Homework2.java:91)
-Caused by: org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (incomplete input)
-	at edu.montana.csci.csci440.homework.Homework2.bulkInsertGenres(Homework2.java:91)
-
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.385 s - in edu.montana.csci.csci440.homework.Homework2
 [INFO] 
 [INFO] Results:
 [INFO] 
-[ERROR] Errors: 
-[ERROR]   Homework2.bulkInsertGenres:91->DBTest.executeUpdate:67 » Runtime org.sqlite.SQ...
-[INFO] 
-[ERROR] Tests run: 3, Failures: 0, Errors: 1, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
 [INFO] 
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
+[INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.778 s
-[INFO] Finished at: 2022-10-28T22:01:16-06:00
+[INFO] Total time:  1.972 s
+[INFO] Finished at: 2022-10-29T07:40:33-06:00
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project CSCI_440_Project: There are test failures.
-[ERROR] 
-[ERROR] Please refer to /Users/carson/Projects/msu/demo/csci-440-fall2022-private/grading/scripts/repos/patrick_tung/target/surefire-reports for the individual test results.
-[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
-[ERROR] -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
