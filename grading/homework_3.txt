@@ -27,12 +27,12 @@
 Resetting DB After Test...
 Resetting DB After Test...
 Resetting DB After Test...
-[ERROR] Tests run: 3, Failures: 0, Errors: 3, Skipped: 0, Time elapsed: 0.255 s <<< FAILURE! - in edu.montana.csci.csci440.homework.Homework3
-[ERROR] useATransactionToSafelyMoveMillisecondsFromOneTrackToAnother  Time elapsed: 0.246 s  <<< ERROR!
+[ERROR] Tests run: 3, Failures: 0, Errors: 3, Skipped: 0, Time elapsed: 0.251 s <<< FAILURE! - in edu.montana.csci.csci440.homework.Homework3
+[ERROR] useATransactionToSafelyMoveMillisecondsFromOneTrackToAnother  Time elapsed: 0.243 s  <<< ERROR!
 org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (near "TODO": syntax error)
 	at edu.montana.csci.csci440.homework.Homework3.useATransactionToSafelyMoveMillisecondsFromOneTrackToAnother(Homework3.java:36)
 
-[ERROR] selectPopularTracksAndTheirAlbums  Time elapsed: 0.002 s  <<< ERROR!
+[ERROR] selectPopularTracksAndTheirAlbums  Time elapsed: 0.004 s  <<< ERROR!
 java.lang.RuntimeException: java.sql.SQLException: The prepared statement has been finalized
 	at edu.montana.csci.csci440.homework.Homework3.selectPopularTracksAndTheirAlbums(Homework3.java:69)
 Caused by: java.sql.SQLException: The prepared statement has been finalized
@@ -57,8 +57,8 @@ Caused by: java.sql.SQLException: The prepared statement has been finalized
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.330 s
-[INFO] Finished at: 2022-12-02T15:19:13-07:00
+[INFO] Total time:  1.267 s
+[INFO] Finished at: 2022-12-02T15:30:50-07:00
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project CSCI_440_Project: There are test failures.
 [ERROR] 
