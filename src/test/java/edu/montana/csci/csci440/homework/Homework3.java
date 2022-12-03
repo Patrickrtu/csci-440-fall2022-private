@@ -67,12 +67,22 @@ public class Homework3 extends DBTest {
     public void selectPopularTracksAndTheirAlbums() throws SQLException {
 
         // HINT: join to invoice items and do a group by/having to get the right answer
-        List<Map<String, Object>> tracks = executeSQL("");
+        // basically if a TrackID appears in invoice_items more than once, select it
+        List<Map<String, Object>> tracks = executeSQL("SELECT *\n" +
+                "FROM tracks\n" +
+                "         JOIN invoice_items ii on tracks.TrackId = ii.TrackId\n" +
+                "GROUP BY tracks.TrackId\n" +
+                "HAVING COUNT(tracks.TrackId) > 1;");
         assertEquals(256, tracks.size());
 
         // HINT: join to tracks and invoice items and do a group by/having to get the right answer
         //       note: you will need to use the DISTINCT operator to get the right result!
-        List<Map<String, Object>> albums = executeSQL("");
+        List<Map<String, Object>> albums = executeSQL("SELECT DISTINCT AlbumId\n" +
+                "FROM (SELECT *\n" +
+                "      FROM tracks\n" +
+                "               JOIN invoice_items ii on tracks.TrackId = ii.TrackId\n" +
+                "      GROUP BY tracks.TrackId\n" +
+                "      HAVING COUNT(tracks.TrackId) > 1);");
         assertEquals(166, albums.size());
     }
 
