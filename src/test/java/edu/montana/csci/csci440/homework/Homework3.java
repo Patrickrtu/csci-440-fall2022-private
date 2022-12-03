@@ -17,7 +17,7 @@ public class Homework3 extends DBTest {
 
     @Test
     /*
-     * Use a transaction to safely move milliseconds from one track to anotherls
+     * Use a transaction to safely move milliseconds from one track to another
      *
      * You will need to use the JDBC transaction API, outlined here:
      *
@@ -33,17 +33,18 @@ public class Homework3 extends DBTest {
 
         try(Connection connection = DB.connect()){
             connection.setAutoCommit(false);
-            PreparedStatement subtract = connection.prepareStatement("TODO");
-            subtract.setLong(1, 0);
-            subtract.setLong(2, 0);
+            PreparedStatement subtract = connection.prepareStatement("UPDATE tracks SET Milliseconds = Milliseconds - ?" + "WHERE TrackId = ?");
+            subtract.setLong(1, 10);
+            subtract.setLong(2,  1);
             subtract.execute();
 
-            PreparedStatement add = connection.prepareStatement("TODO");
-            add.setLong(1, 0);
-            add.setLong(2, 0);
+            PreparedStatement add = connection.prepareStatement("UPDATE tracks SET Milliseconds = Milliseconds + ?" + "WHERE TrackId = ?");
+            add.setLong(1, 10);
+            add.setLong(2, 2);
             add.execute();
 
             // commit with the connection
+            connection.commit();
         }
 
         // refresh tracks from db
@@ -57,7 +58,7 @@ public class Homework3 extends DBTest {
     /*
      * Select tracks that have been sold more than once (> 1)
      *
-     * Select the albumbs that have tracks that have been sold more than once (> 1)
+     * Select the albums that have tracks that have been sold more than once (> 1)
      *   NOTE: This is NOT the same as albums whose tracks have been sold more than once!
      *         An album could have had three tracks, each sold once, and should not be included
      *         in this result.  It should only include the albums of the tracks found in the first
