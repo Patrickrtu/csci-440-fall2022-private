@@ -56,6 +56,55 @@ public class Album extends Model {
     public Long getArtistId() {
         return artistId;
     }
+    @Override
+    public boolean verify() {
+        _errors.clear(); // clear any existing errors
+        if (title == null || "".equals(title)) {
+            addError("Title can't be null or blank!");
+        }
+        if (artistId == null || "".equals(artistId)) {
+            addError("ArtistId can't be null or blank!");
+        }
+        return !hasErrors();
+    }
+    @Override
+    public boolean create() {
+        if (verify()) {
+            try (Connection conn = DB.connect();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "INSERT INTO albums (Title, ArtistId) VALUES (?, ?)")) {
+                stmt.setString(1, getTitle());
+                stmt.setLong(2, getArtistId());
+                stmt.executeUpdate();
+                albumId = DB.getLastID(conn);
+                return true;
+            } catch (SQLException sqlException) {
+                throw new RuntimeException(sqlException);
+            }
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean update() {
+        if (verify()) {
+            try (Connection conn = DB.connect();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "UPDATE albums SET Title = ? WHERE ArtistId = ?")) {
+                stmt.setString(1, getTitle());
+                stmt.setLong(2, getArtistId());
+                stmt.executeUpdate();
+                return true;
+            } catch (SQLException sqlException) {
+                throw new RuntimeException(sqlException);
+            }
+        } else {
+            return false;
+        }
+    }
+
+
 
     public static List<Album> all() {
         return all(0, Integer.MAX_VALUE);
