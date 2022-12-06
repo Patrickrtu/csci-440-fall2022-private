@@ -32,7 +32,20 @@ public class Employee extends Model {
 
     public static List<Employee.SalesSummary> getSalesSummaries() {
         //TODO - a GROUP BY query to determine the sales (look at the invoices table), using the SalesSummary class
-        return Collections.emptyList();
+        try (Connection conn = DB.connect();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT * FROM employees WHERE =?"
+             )) {
+//            stmt.setLong(1, this.getEmployeeId());
+            ResultSet results = stmt.executeQuery();
+            List<Employee.SalesSummary> resultList = new LinkedList<SalesSummary>();
+            while (results.next()) {
+                resultList.add(new Employee.SalesSummary(results));
+            }
+            return resultList;
+        } catch (SQLException sqlException) {
+            throw new RuntimeException(sqlException);
+        }
     }
 
     @Override
@@ -151,7 +164,7 @@ public class Employee extends Model {
              )) {
             stmt.setLong(1, this.getEmployeeId());
             ResultSet results = stmt.executeQuery();
-            List<Employee> resultList = new LinkedList<>();
+            List<Employee> resultList = new LinkedList<Employee>();
             while (results.next()) {
                 resultList.add(new Employee(results));
             }
@@ -191,8 +204,51 @@ public class Employee extends Model {
         }
     }
 
+    public static List<Employee> emptyList() {
+        List<Employee> emptyList = new LinkedList<>();
+        return emptyList;
+    }
+
+//    public static List<Employee> peons(Long reportsTo) {
+//        return peons(0, Integer.MAX_VALUE, reportsTo);
+//    }
+//
+//    public static List<Employee> peons(int page, int count, Long reportsTo) {
+//        int offset = count * (page - 1);
+//        try (Connection conn = DB.connect();
+//             PreparedStatement stmt = conn.prepareStatement(
+//                     "SELECT *\n" +
+//                             "FROM employees\n" +
+//                             "WHERE ReportsTo = ?\n" +
+//                             "LIMIT ? OFFSET ?;\n"
+//             )) {
+//            stmt.setLong(1, reportsTo);
+//            stmt.setInt(2, count);
+//            stmt.setInt(3, offset);
+//            ResultSet results = stmt.executeQuery();
+//            List<Employee> resultList = new LinkedList<>();
+//            while (results.next()) {
+//                resultList.add(new Employee(results));
+//            }
+//            return resultList;
+//        } catch (SQLException sqlException) {
+//            throw new RuntimeException(sqlException);
+//        }
+//    }
+
     public static Employee findByEmail(String newEmailAddress) {
-        throw new UnsupportedOperationException("Implement me");
+        try (Connection conn = DB.connect();
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM employees WHERE Email=?")) {
+            stmt.setString(1, newEmailAddress);
+            ResultSet results = stmt.executeQuery();
+            if (results.next()) {
+                return new Employee(results);
+            } else {
+                return null;
+            }
+        } catch (SQLException sqlException) {
+            throw new RuntimeException(sqlException);
+        }
     }
 
     public static Employee find(long employeeId) {
