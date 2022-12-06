@@ -92,8 +92,8 @@ public class Album extends Model {
             try (Connection conn = DB.connect();
                  PreparedStatement stmt = conn.prepareStatement(
                          "UPDATE albums SET Title = ? WHERE ArtistId = ?")) {
-                stmt.setString(1, getTitle());
-                stmt.setLong(2, getArtistId());
+                stmt.setString(1, this.getTitle());
+                stmt.setLong(2, this.getArtistId());
                 stmt.executeUpdate();
                 return true;
             } catch (SQLException sqlException) {
@@ -111,11 +111,13 @@ public class Album extends Model {
     }
 
     public static List<Album> all(int page, int count) {
+        int offset = count * (page - 1);
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT * FROM albums LIMIT ?"
+                     "SELECT * FROM albums LIMIT ? OFFSET ?"
              )) {
             stmt.setInt(1, count);
+            stmt.setInt(2, offset);
             ResultSet results = stmt.executeQuery();
             List<Album> resultList = new LinkedList<>();
             while (results.next()) {

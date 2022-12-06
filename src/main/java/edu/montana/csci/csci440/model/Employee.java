@@ -44,7 +44,10 @@ public class Employee extends Model {
         if (lastName == null || "".equals(lastName)) {
             addError("LastName can't be null!");
         }
-        return !hasErrors();
+        if (email == null || "".equals(email) || !email.contains("@")) {
+            addError("Invalid email!");
+        }
+            return !hasErrors();
     }
 
     @Override
@@ -72,10 +75,12 @@ public class Employee extends Model {
         if (verify()) {
             try (Connection conn = DB.connect();
                  PreparedStatement stmt = conn.prepareStatement(
-                         "INSERT INTO employees (FirstName, LastName, Email) VALUES (?, ?, ?)")) {
+                         "INSERT INTO employees (FirstName, LastName, Email, Title, ReportsTo) VALUES (?, ?, ?, ?, ?)")) {
                 stmt.setString(1, this.getFirstName());
                 stmt.setString(2, this.getLastName());
                 stmt.setString(3, this.getEmail());
+                stmt.setString(4, this.getTitle());
+                stmt.setLong(5, this.getReportsTo());
                 stmt.executeUpdate();
                 employeeId = DB.getLastID(conn);
                 return true;
@@ -114,7 +119,12 @@ public class Employee extends Model {
     public String getEmail() {
         return email;
     }
-    public void setEmail(String email) {
+
+    public String getTitle() {
+        return title;
+    }
+
+        public void setEmail(String email) {
         this.email = email;
     }
 
@@ -151,7 +161,10 @@ public class Employee extends Model {
         }
     }
     public Employee getBoss() {
-        //TODO implement
+        if (reportsTo != null) {
+            Employee boss = find(reportsTo);
+            return boss;
+        }
         return null;
     }
 
@@ -160,11 +173,13 @@ public class Employee extends Model {
     }
 
     public static List<Employee> all(int page, int count) {
+        int offset = count * (page - 1);
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT * FROM employees LIMIT ?"
+                     "SELECT * FROM employees LIMIT ? OFFSET ?"
              )) {
             stmt.setInt(1, count);
+            stmt.setInt(2, offset);
             ResultSet results = stmt.executeQuery();
             List<Employee> resultList = new LinkedList<>();
             while (results.next()) {
@@ -200,7 +215,11 @@ public class Employee extends Model {
     }
 
     public void setReportsTo(Employee employee) {
-        // TODO implement
+        if (employee != null) {
+            reportsTo = employee.getEmployeeId();
+            return;
+        }
+        reportsTo = null;
     }
 
     public static class SalesSummary {
