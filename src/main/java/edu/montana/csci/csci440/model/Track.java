@@ -64,17 +64,32 @@ public class Track extends Model {
 
     public static Long count() {
         Jedis redisClient = new Jedis(); // use this class to access redis and create a cache
-        try (Connection conn = DB.connect();
-             PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) as Count FROM tracks")) {
-            ResultSet results = stmt.executeQuery();
-            if (results.next()) {
-                return results.getLong("Count");
-            } else {
-                throw new IllegalStateException("Should find a count!");
+        String currentCacheValue = redisClient.get(REDIS_CACHE_KEY);
+        // check if the redis cache is null
+        if (currentCacheValue == null) {
+            // if so, do query
+            try (Connection conn = DB.connect();
+                 PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) as Count FROM tracks")) {
+                ResultSet results = stmt.executeQuery();
+                if (results.next()) {
+                    // store it in redis
+                    String countString = new StringBuilder().append(results.getLong("Count")).toString();
+                    redisClient.set(REDIS_CACHE_KEY,  countString);
+                    return results.getLong("Count");
+                } else {
+                    throw new IllegalStateException("Should find a count!");
+                }
+            } catch (SQLException sqlException) {
+                throw new RuntimeException(sqlException);
             }
-        } catch (SQLException sqlException) {
-            throw new RuntimeException(sqlException);
         }
+        // otherwise convert to long and return
+        return Long.parseLong(currentCacheValue);
+
+        // TODO - INVALIDATE THE CACHE
+        // think of operations (like adding and deleting) that invalidates the COUNT(*)
+
+
     }
 
     public Album getAlbum() {
@@ -191,6 +206,7 @@ public class Track extends Model {
     @Override
     public boolean create() {
         if (verify()) {
+            Jedis redisClient = new Jedis();
             try (Connection conn = DB.connect();
                  PreparedStatement stmt = conn.prepareStatement(
                          "INSERT INTO tracks (Name, AlbumId, MediaTypeId, Milliseconds, UnitPrice) VALUES (?, ?, ?, ?, ?)")) {
@@ -201,6 +217,8 @@ public class Track extends Model {
                 stmt.setBigDecimal(5, this.getUnitPrice());
                 stmt.executeUpdate();
                 trackId = DB.getLastID(conn);
+                // invalidating cached COUNT(*) of tracks since we just added a new row to the table
+                redisClient.del(REDIS_CACHE_KEY);
                 return true;
             } catch (SQLException sqlException) {
                 throw new RuntimeException(sqlException);
