@@ -176,6 +176,7 @@ public class Employee extends Model {
             throw new RuntimeException(sqlException);
         }
     }
+
     public Employee getBoss() {
         if (reportsTo != null) {
             Employee boss = find(reportsTo);
