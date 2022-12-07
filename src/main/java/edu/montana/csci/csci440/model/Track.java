@@ -27,6 +27,8 @@ public class Track extends Model {
     private BigDecimal unitPrice;
 
     public static final String REDIS_CACHE_KEY = "cs440-tracks-count-cache";
+    public static final String REDIS_CACHE_KEY_ARTIST_NAME = "cs440-tracks-artist-name-cache";
+    public static final String REDIS_CACHE_KEY_ALBUM_TITLE = "cs440-tracks-albume-title-cache";
 
     public Track() {
         mediaTypeId = 1l;
@@ -48,11 +50,24 @@ public class Track extends Model {
     }
 
     public static Track find(long i) {
+        Jedis redisClient = new Jedis(); // use this class to access redis and create a cache
         try (Connection conn = DB.connect();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM tracks WHERE TrackId=?")) {
+             PreparedStatement stmt = conn.prepareStatement("SELECT *, album.Title AS AlbumTitle, artist.Name AS ArtistName\n" +
+                     "FROM tracks\n" +
+                     "         JOIN albums album on tracks.AlbumId = album.AlbumId\n" +
+                     "         JOIN artists artist on album.ArtistId = artist.ArtistId\n" +
+                     "WHERE TrackId = ?;")) {
             stmt.setLong(1, i);
             ResultSet results = stmt.executeQuery();
             if (results.next()) {
+                if (redisClient.get(REDIS_CACHE_KEY_ALBUM_TITLE) == null){
+                    String albumTitleString = new StringBuilder().append(results.getString("AlbumTitle")).toString();
+                    redisClient.set(REDIS_CACHE_KEY_ALBUM_TITLE, albumTitleString);
+                }
+                if (redisClient.get(REDIS_CACHE_KEY_ARTIST_NAME) == null){
+                    String artistNameString = new StringBuilder().append(results.getString("ArtistName")).toString();
+                    redisClient.set(REDIS_CACHE_KEY_ARTIST_NAME, artistNameString);
+                }
                 return new Track(results);
             } else {
                 return null;
@@ -74,7 +89,7 @@ public class Track extends Model {
                 if (results.next()) {
                     // store it in redis
                     String countString = new StringBuilder().append(results.getLong("Count")).toString();
-                    redisClient.set(REDIS_CACHE_KEY,  countString);
+                    redisClient.set(REDIS_CACHE_KEY, countString);
                     return results.getLong("Count");
                 } else {
                     throw new IllegalStateException("Should find a count!");
@@ -86,10 +101,7 @@ public class Track extends Model {
         // otherwise convert to long and return
         return Long.parseLong(currentCacheValue);
 
-        // TODO - INVALIDATE THE CACHE
         // think of operations (like adding and deleting) that invalidates the COUNT(*)
-
-
     }
 
     public Album getAlbum() {
@@ -192,15 +204,32 @@ public class Track extends Model {
     }
 
     public String getArtistName() {
-        // TODO implement more efficiently
-        //  hint: cache on this model object
-        return getAlbum().getArtist().getName();
+        // need to SELECT artist and album associated with the track in find() method and store these info as cache
+        Jedis redisClient = new Jedis(); // use this class to access redis and create a cache
+        String currentCacheValue = redisClient.get(REDIS_CACHE_KEY_ARTIST_NAME);
+        // check if the redis cache is null
+        if (currentCacheValue == null) {
+            String artistName = getAlbum().getArtist().getName();
+            // cache on this model object
+            redisClient.set(REDIS_CACHE_KEY_ARTIST_NAME, artistName);
+            return artistName;
+        }
+        return currentCacheValue;
+        // consider cache invalidation
     }
 
     public String getAlbumTitle() {
-        // TODO implement more efficiently
-        //  hint: cache on this model object
-        return getAlbum().getTitle();
+        Jedis redisClient = new Jedis(); // use this class to access redis and create a cache
+        String currentCacheValue = redisClient.get(REDIS_CACHE_KEY_ALBUM_TITLE);
+        // check if the redis cache is null
+        if (currentCacheValue == null) {
+            String albumTitle = getAlbum().getTitle();
+            // cache on this model object
+            redisClient.set(REDIS_CACHE_KEY_ALBUM_TITLE, albumTitle);
+            return albumTitle;
+        }
+        return currentCacheValue;
+        // consider cache invalidation
     }
 
     @Override
@@ -218,7 +247,10 @@ public class Track extends Model {
                 stmt.executeUpdate();
                 trackId = DB.getLastID(conn);
                 // invalidating cached COUNT(*) of tracks since we just added a new row to the table
+                // I believe incrementing the cache is a better approach here...
                 redisClient.del(REDIS_CACHE_KEY);
+                redisClient.del(REDIS_CACHE_KEY_ARTIST_NAME);
+                redisClient.del(REDIS_CACHE_KEY_ALBUM_TITLE);
                 return true;
             } catch (SQLException sqlException) {
                 throw new RuntimeException(sqlException);
@@ -230,11 +262,15 @@ public class Track extends Model {
 
     @Override
     public void delete() {
+        Jedis redisClient = new Jedis();
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(
                      "DELETE FROM tracks WHERE TrackId=?")) {
             stmt.setLong(1, this.getTrackId());
             stmt.executeUpdate();
+            redisClient.del(REDIS_CACHE_KEY);
+            redisClient.del(REDIS_CACHE_KEY_ARTIST_NAME);
+            redisClient.del(REDIS_CACHE_KEY_ALBUM_TITLE);
         } catch (SQLException sqlException) {
             throw new RuntimeException(sqlException);
         }
@@ -255,12 +291,15 @@ public class Track extends Model {
     @Override
     public boolean update() {
         if (verify()) {
+            Jedis redisClient = new Jedis();
             try (Connection conn = DB.connect();
                  PreparedStatement stmt = conn.prepareStatement(
                          "UPDATE tracks SET Name = ? WHERE TrackId = ?")) {
                 stmt.setString(1, this.getName());
                 stmt.setLong(2, this.getTrackId());
                 stmt.executeUpdate();
+                redisClient.del(REDIS_CACHE_KEY_ARTIST_NAME);
+                redisClient.del(REDIS_CACHE_KEY_ALBUM_TITLE);
                 return true;
             } catch (SQLException sqlException) {
                 throw new RuntimeException(sqlException);
