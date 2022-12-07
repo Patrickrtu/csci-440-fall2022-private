@@ -31,12 +31,15 @@ public class Employee extends Model {
     }
 
     public static List<Employee.SalesSummary> getSalesSummaries() {
-        //TODO - a GROUP BY query to determine the sales (look at the invoices table), using the SalesSummary class
+        // a GROUP BY query to determine the sales (look at the invoices table), using the SalesSummary class
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT * FROM employees WHERE =?"
+                     "SELECT employees.FirstName, employees.LastName, employees.Email, COUNT(InvoiceId) AS SalesCount, SUM(Total) AS SalesTotal\n" +
+                             "FROM employees\n" +
+                             "         JOIN customers c on employees.EmployeeId = c.SupportRepId\n" +
+                             "         JOIN invoices i on c.CustomerId = i.CustomerId\n" +
+                             "GROUP BY employees.EmployeeId;"
              )) {
-//            stmt.setLong(1, this.getEmployeeId());
             ResultSet results = stmt.executeQuery();
             List<Employee.SalesSummary> resultList = new LinkedList<SalesSummary>();
             while (results.next()) {
@@ -208,33 +211,6 @@ public class Employee extends Model {
         List<Employee> emptyList = new LinkedList<>();
         return emptyList;
     }
-
-//    public static List<Employee> peons(Long reportsTo) {
-//        return peons(0, Integer.MAX_VALUE, reportsTo);
-//    }
-//
-//    public static List<Employee> peons(int page, int count, Long reportsTo) {
-//        int offset = count * (page - 1);
-//        try (Connection conn = DB.connect();
-//             PreparedStatement stmt = conn.prepareStatement(
-//                     "SELECT *\n" +
-//                             "FROM employees\n" +
-//                             "WHERE ReportsTo = ?\n" +
-//                             "LIMIT ? OFFSET ?;\n"
-//             )) {
-//            stmt.setLong(1, reportsTo);
-//            stmt.setInt(2, count);
-//            stmt.setInt(3, offset);
-//            ResultSet results = stmt.executeQuery();
-//            List<Employee> resultList = new LinkedList<>();
-//            while (results.next()) {
-//                resultList.add(new Employee(results));
-//            }
-//            return resultList;
-//        } catch (SQLException sqlException) {
-//            throw new RuntimeException(sqlException);
-//        }
-//    }
 
     public static Employee findByEmail(String newEmailAddress) {
         try (Connection conn = DB.connect();

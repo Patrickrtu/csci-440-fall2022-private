@@ -36,7 +36,7 @@ public class Track extends Model {
         unitPrice = new BigDecimal("0");
     }
 
-    private Track(ResultSet results) throws SQLException {
+    Track(ResultSet results) throws SQLException {
         name = results.getString("Name");
         milliseconds = results.getLong("Milliseconds");
         bytes = results.getLong("Bytes");
@@ -252,11 +252,13 @@ public class Track extends Model {
     }
 
     public static List<Track> all(int page, int count, String orderBy) {
+        int offset = count * (page - 1);
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT * FROM tracks LIMIT ?"
+                     "SELECT * FROM tracks LIMIT ? OFFSET ?"
              )) {
             stmt.setInt(1, count);
+            stmt.setInt(2, offset);
             ResultSet results = stmt.executeQuery();
             List<Track> resultList = new LinkedList<>();
             while (results.next()) {

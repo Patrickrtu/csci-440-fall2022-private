@@ -28,6 +28,8 @@ public class Invoice extends Model {
         billingState = results.getString("BillingState");
         billingCountry = results.getString("BillingCountry");
         billingPostalCode = results.getString("BillingPostalCode");
+        billingCity = results.getString("BillingCity");
+        billingAddress = results.getString("BillingAddress");
         total = results.getBigDecimal("Total");
         invoiceId = results.getLong("InvoiceId");
     }
