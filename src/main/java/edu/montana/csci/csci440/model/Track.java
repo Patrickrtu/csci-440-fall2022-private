@@ -235,12 +235,13 @@ public class Track extends Model {
             Jedis redisClient = new Jedis();
             try (Connection conn = DB.connect();
                  PreparedStatement stmt = conn.prepareStatement(
-                         "INSERT INTO tracks (Name, AlbumId, MediaTypeId, Milliseconds, UnitPrice) VALUES (?, ?, ?, ?, ?)")) {
+                         "INSERT INTO tracks (Name, AlbumId, MediaTypeId, Milliseconds, UnitPrice, Bytes) VALUES (?, ?, ?, ?, ?, ?)")) {
                 stmt.setString(1, this.getName());
                 stmt.setLong(2, this.getAlbumId());
                 stmt.setLong(3, this.getMediaTypeId());
                 stmt.setLong(4, this.getMilliseconds());
                 stmt.setBigDecimal(5, this.getUnitPrice());
+                stmt.setLong(6, this.getBytes());
                 stmt.executeUpdate();
                 trackId = DB.getLastID(conn);
                 // invalidating cached COUNT(*) of tracks since we just added a new row to the table
