@@ -43,6 +43,9 @@
     <tr>
         <th>InvoiceLineId</th>
         <th>TrackId</th>
+        <th>TrackName</th>
+        <th>AlbumTitle</th>
+        <th>ArtistName</th>
         <th>UnitPrice</th>
         <th>Quantity</th>
     </tr>
@@ -52,6 +55,9 @@
         <tr>
             <td>$!item.InvoiceLineId</td>
             <td>$!item.TrackId</td>
+            <td>$!item.getTrack().getName()</td>
+            <td>$!item.getTrack().getAlbumTitle()</td>
+            <td>$!item.getTrack().getArtistName()</td>
             <td>$!item.UnitPrice</td>
             <td>$!item.Quantity</td>
         </tr>

@@ -35,8 +35,20 @@ public class Invoice extends Model {
     }
 
     public List<InvoiceItem> getInvoiceItems(){
-        //TODO implement
-        return Collections.emptyList();
+        try (Connection conn = DB.connect();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT * FROM invoice_items WHERE invoiceId=?"
+             )) {
+            stmt.setLong(1, this.getInvoiceId());
+            ResultSet results = stmt.executeQuery();
+            List<InvoiceItem> resultList = new LinkedList<InvoiceItem>();
+            while (results.next()) {
+                resultList.add(new InvoiceItem(results));
+            }
+            return resultList;
+        } catch (SQLException sqlException) {
+            throw new RuntimeException(sqlException);
+        }
     }
     public Customer getCustomer() {
         return null;
