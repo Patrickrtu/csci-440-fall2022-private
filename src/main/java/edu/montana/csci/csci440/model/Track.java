@@ -50,8 +50,10 @@ public class Track extends Model {
     }
 
     public static Track find(long i) {
-        Jedis redisClient = new Jedis(); // use this class to access redis and create a cache
+        // SELECT artist and album associated with the track and store track artist's name and album title info as cache
+        Jedis redisClient = new Jedis();
         try (Connection conn = DB.connect();
+             // eliminate ambiguity with AS clause
              PreparedStatement stmt = conn.prepareStatement("SELECT *, album.Title AS AlbumTitle, artist.Name AS ArtistName\n" +
                      "FROM tracks\n" +
                      "         JOIN albums album on tracks.AlbumId = album.AlbumId\n" +
@@ -60,14 +62,11 @@ public class Track extends Model {
             stmt.setLong(1, i);
             ResultSet results = stmt.executeQuery();
             if (results.next()) {
-                if (redisClient.get(REDIS_CACHE_KEY_ALBUM_TITLE) == null){
-                    String albumTitleString = new StringBuilder().append(results.getString("AlbumTitle")).toString();
-                    redisClient.set(REDIS_CACHE_KEY_ALBUM_TITLE, albumTitleString);
-                }
-                if (redisClient.get(REDIS_CACHE_KEY_ARTIST_NAME) == null){
-                    String artistNameString = new StringBuilder().append(results.getString("ArtistName")).toString();
-                    redisClient.set(REDIS_CACHE_KEY_ARTIST_NAME, artistNameString);
-                }
+                // set cache based on new track info
+                String albumTitleString = new StringBuilder().append(results.getString("AlbumTitle")).toString();
+                redisClient.set(REDIS_CACHE_KEY_ALBUM_TITLE, albumTitleString);
+                String artistNameString = new StringBuilder().append(results.getString("ArtistName")).toString();
+                redisClient.set(REDIS_CACHE_KEY_ARTIST_NAME, artistNameString);
                 return new Track(results);
             } else {
                 return null;
@@ -219,12 +218,10 @@ public class Track extends Model {
     }
 
     public String getAlbumTitle() {
-        Jedis redisClient = new Jedis(); // use this class to access redis and create a cache
+        Jedis redisClient = new Jedis();
         String currentCacheValue = redisClient.get(REDIS_CACHE_KEY_ALBUM_TITLE);
-        // check if the redis cache is null
         if (currentCacheValue == null) {
             String albumTitle = getAlbum().getTitle();
-            // cache on this model object
             redisClient.set(REDIS_CACHE_KEY_ALBUM_TITLE, albumTitle);
             return albumTitle;
         }
@@ -247,8 +244,9 @@ public class Track extends Model {
                 stmt.executeUpdate();
                 trackId = DB.getLastID(conn);
                 // invalidating cached COUNT(*) of tracks since we just added a new row to the table
-                // I believe incrementing the cache is a better approach here...
+                // I believe incrementing the count cache is a better approach here...
                 redisClient.del(REDIS_CACHE_KEY);
+                // invalidating cached artist name and album title
                 redisClient.del(REDIS_CACHE_KEY_ARTIST_NAME);
                 redisClient.del(REDIS_CACHE_KEY_ALBUM_TITLE);
                 return true;
