@@ -104,6 +104,18 @@ public class Album extends Model {
         }
     }
 
+    @Override
+    public void delete() {
+        try (Connection conn = DB.connect();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "DELETE FROM albums WHERE AlbumId=?")) {
+            stmt.setLong(1, this.getAlbumId());
+            stmt.executeUpdate();
+        } catch (SQLException sqlException) {
+            throw new RuntimeException(sqlException);
+        }
+    }
+
 
 
     public static List<Album> all() {

@@ -3,6 +3,7 @@ package edu.montana.csci.csci440.model;
 import edu.montana.csci.csci440.util.DB;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.*;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -266,7 +267,7 @@ public class Employee extends Model {
             lastName = results.getString("LastName");
             email = results.getString("Email");
             salesCount = results.getLong("SalesCount");
-            salesTotals = results.getBigDecimal("SalesTotal");
+            salesTotals = results.getBigDecimal("SalesTotal").setScale(2, RoundingMode.HALF_DOWN);
         }
 
         public String getFirstName() {
