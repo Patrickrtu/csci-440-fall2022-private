@@ -316,7 +316,7 @@ public class Track extends Model {
                                              Integer maxRuntime, Integer minRuntime) {
         LinkedList<Object> args = new LinkedList<>();
 
-        String query = "SELECT * FROM tracks " +
+        String query = "SELECT * , tracks.AlbumId AS TracksAlbumId FROM tracks " +
                 "JOIN albums ON tracks.AlbumId = albums.AlbumId " +
                 "WHERE name LIKE ?";
         args.add("%" + search + "%");
@@ -326,10 +326,25 @@ public class Track extends Model {
             query += " AND ArtistId=? ";
             args.add(artistId);
         }
+        if (albumId != null) {
+            query += " AND TracksAlbumId = ?";
+            args.add(albumId);
+        }
+        if (maxRuntime != null) {
+            query += " AND Milliseconds < ?";
+            args.add(maxRuntime);
+        }
+        if (minRuntime != null) {
+            query += " AND Milliseconds > ?";
+            args.add(minRuntime);
+        }
 
         //  include the limit (you should include the page too :)
         query += " LIMIT ?";
         args.add(count);
+        int offset = count * (page - 1);
+        query += " OFFSET ?";
+        args.add(offset);
 
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(query)) {
