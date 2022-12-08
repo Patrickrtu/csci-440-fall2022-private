@@ -18,12 +18,26 @@ public class Customer extends Model {
     private String lastName;
     private String email;
 
+
     public Employee getSupportRep() {
          return Employee.find(supportRepId);
     }
 
     public List<Invoice> getInvoices(){
-        return Collections.emptyList();
+        try (Connection conn = DB.connect();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT * FROM invoices WHERE CustomerId = ?"
+             )) {
+            stmt.setLong(1, this.getCustomerId());
+            ResultSet results = stmt.executeQuery();
+            List<Invoice> resultList = new LinkedList<Invoice>();
+            while (results.next()) {
+                resultList.add(new Invoice(results));
+            }
+            return resultList;
+        } catch (SQLException sqlException) {
+            throw new RuntimeException(sqlException);
+        }
     }
 
     private Customer(ResultSet results) throws SQLException {

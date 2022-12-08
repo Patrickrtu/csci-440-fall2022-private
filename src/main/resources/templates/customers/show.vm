@@ -29,6 +29,38 @@
     </tbody>
 </table>
 
+<h4>Invoice</h4>
+<table>
+    <thead>
+    <tr>
+        <th>BillingAddress</th>
+        <th>BillingState</th>
+        <th>BillingCountry</th>
+        <th>BillingPostalCode</th>
+        <th>BillingCity</th>
+        <th>BillingAddress</th>
+        <th>Total</th>
+        <th>InvoiceId</th>
+    </tr>
+    </thead>
+    <tbody>
+        #foreach( $item in $customer.Invoices )
+        <tr>
+            <td>$!item.BillingAddress</td>
+            <td>$!item.BillingState</td>
+            <td>$!item.BillingCountry</td>
+            <td>$!item.BillingPostalCode</td>
+            <td>$!item.BillingCity</td>
+            <td>$!item.BillingAddress</td>
+            <td>$!item.Total</td>
+            <td>$!item.InvoiceId</td>
+                #break
+        </tr>
+        #end
+        $web.pagingWidget($customer.Invoices)
+    </tbody>
+</table>
+
 <a href="/customers/$customer.CustomerId/edit">[Edit Customer]</a>
 <a href="/customers/$customer.CustomerId/delete">[Delete Customer]</a>
 
